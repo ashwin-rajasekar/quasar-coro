@@ -1,0 +1,24 @@
+#pragma once
+
+namespace quasar::coro {
+	namespace await {
+		template<class> struct delegate;
+		template<class, class, class> struct yield_delegate;
+	}
+
+	template<class> struct coroutine;
+	template<class> struct unique_coroutine;
+
+	template<class> struct yield_iterator;
+
+
+
+	template<class> struct task_promise;
+	template<class T> using task = unique_coroutine<task_promise<T>>;
+	
+	template<class, class> struct simple_generator_promise;
+	template<class Y, class R> using simple_generator = unique_coroutine<simple_generator_promise<Y, R>>;
+	
+	template<class, class> struct generator_promise;
+	template<class Y, class R> using generator = unique_coroutine<generator_promise<Y, R>>;
+}
