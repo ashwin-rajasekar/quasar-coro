@@ -11,7 +11,7 @@ namespace quasar::coro {
 		yield_iterator(yield_iterator&&)       = delete;
 		void operator =(yield_iterator const&) = delete;
 		void operator =(yield_iterator&&)      = delete;
-	
+
 		yield_iterator() noexcept = default;
 		~yield_iterator() noexcept = default;
 
@@ -19,18 +19,18 @@ namespace quasar::coro {
 			bind(coro.promise());
 			++*this;
 		}
-	
+
 		bool operator ==(std::default_sentinel_t) const noexcept { return m_task.done(); }
-	
+
 		T operator *() const noexcept { return m_getter(m_task); }
-		
+
 		auto* operator ->() const noexcept requires std::is_lvalue_reference_v<T> { return std::addressof(**this); }
-		
+
 		auto const* operator ->() const noexcept requires std::is_rvalue_reference_v<T> {
 			T tmp = **this;
 			return std::addressof(tmp);
 		}
-	
+
 		template<class Self> Self& operator ++(this Self& self){
 			if(self != std::default_sentinel){ self.m_task.resume(); }
 			self.m_rethrow(self.m_task);
@@ -43,7 +43,7 @@ namespace quasar::coro {
 					await::delegate<Delegatee>{std::move(task)},
 					m_iterator{itr},
 					m_promise{caller}{}
-				
+
 				constexpr bool await_ready() const noexcept { return false; }
 
 				std::coroutine_handle<void> await_suspend(std::coroutine_handle<DelegaterPromise> caller) noexcept {
@@ -79,14 +79,17 @@ namespace quasar::coro {
 				if constexpr(requires{ promise.set_iterator(*this); }){ promise.set_iterator(*this); }
 			}
 
+			using getter_func = T(std::coroutine_handle<void>) noexcept;
+			using rethrow_func = void(std::coroutine_handle<void>);
+
 			std::coroutine_handle<void> m_task{};
-			T (*m_getter)(std::coroutine_handle<void>) noexcept = nullptr;
-			void (*m_rethrow)(std::coroutine_handle<void>) = nullptr;
+			getter_func* m_getter = nullptr;
+			rethrow_func* m_rethrow = nullptr;
 	};
 
 	template<class Generator> struct yield_range {
 		Generator task;
-	
+
 		yield_iterator<decltype(task.promise().get_value())> begin() const noexcept { return task; }
 		std::default_sentinel_t end() const noexcept { return {}; }
 	};
