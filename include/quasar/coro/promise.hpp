@@ -3,7 +3,9 @@
 #include "await.hpp"
 #include "coroutine.hpp"
 
+#include <optional>
 #include <stdexcept>
+#include <type_traits>
 
 namespace quasar::coro::promise {
 	struct base {
@@ -27,7 +29,7 @@ namespace quasar::coro::promise {
 		void unhandled_exception() noexcept { m_except = std::current_exception(); }
 
 		void rethrow(){ if(m_except){ std::rethrow_exception(std::exchange(m_except, nullptr)); } }
-		
+
 		protected:
 			std::exception_ptr m_except = nullptr;
 	};
@@ -46,7 +48,7 @@ namespace quasar::coro::promise {
 			if constexpr(pause_at_finish){ return std::noop_coroutine(); }
 			else { return {}; }
 		}
-		
+
 		void set_continuation(std::coroutine_handle<void> continuation) noexcept { m_continuation = continuation; }
 
 		await::handoff intermediate_suspend() noexcept {
@@ -66,15 +68,30 @@ namespace quasar::coro::promise {
 
 	/** Result Support **/
 	template<class T> struct result {
-		void return_value(auto&& arg){ std::construct_at(&m_result, std::move(arg)); }
+		void return_value(auto&& arg){ m_result.emplace(std::move(arg)); }
 
-		T get_result() noexcept { return std::forward<T>(m_result); }
+		T get_result() noexcept { return std::move(*m_result); }
 
 		protected:
-			union {
-				std::byte dummy{};
-				T m_result;
-			};
+			std::optional<T> m_result;
+	};
+
+	template<class T> requires (std::is_trivially_default_constructible_v<T>) struct result<T> {
+		void return_value(auto&& arg){ m_result = std::move(arg); }
+
+		T get_result() noexcept { return std::move(*m_result); }
+
+		protected:
+			T m_result;
+	};
+
+	template<class T> requires (std::is_reference_v<T>) struct result<T> {
+		void return_value(T arg){ m_result = &arg; }
+
+		T get_result() noexcept { return static_cast<T>(*m_result); }
+
+		protected:
+			std::remove_reference_t<T>* m_result;
 	};
 
 	template<> struct result<void> { void return_void(){} };
@@ -99,7 +116,7 @@ namespace quasar::coro::promise {
 
 		protected:
 			void capture_value(auto&& value) noexcept { std::construct_at(&m_yield, std::move(value)); }
-			
+
 			union {
 				std::byte dummy{};
 				T m_yield;
