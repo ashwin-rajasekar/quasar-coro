@@ -79,7 +79,7 @@ namespace quasar::coro::promise {
 	template<class T> requires (std::is_trivially_default_constructible_v<T>) struct result<T> {
 		void return_value(auto&& arg){ m_result = std::move(arg); }
 
-		T get_result() noexcept { return std::move(*m_result); }
+		T get_result() noexcept { return std::move(m_result); }
 
 		protected:
 			T m_result;
