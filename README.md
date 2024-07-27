@@ -44,7 +44,7 @@ namespace quasar::coro {
 The if the promise type provides a `void rethrow()` function it will be invoked after every resumption of the coroutine. This is to allow exception-handling promise types to re-raise exceptions to the calling function.
 
 ### `unique_coroutine`
-This handle type represents exclusive ownership of the coroutine frame. The frame is automatically cleaned up if the `unique_coroutine` object representing it is destroyed (e.g. by going out of scope). By `co_await`ing an r-value of this type, you can delegate to the represented coroutine. Upon completion of the delgeted coroutine, control will return to you
+This handle type represents exclusive ownership of the coroutine frame. The frame is automatically cleaned up if the `unique_coroutine` object representing it is destroyed (e.g. by going out of scope). By `co_await`ing an r-value of this type, you can delegate to the represented coroutine. Upon completion of the delgeted coroutine, control will return to the awaiting coroutine.
 
 ## Promise Base Types
 The promise base types allow users to quickly & easily create custom promise types by simply inheriting from them.
