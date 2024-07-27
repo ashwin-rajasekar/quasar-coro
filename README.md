@@ -13,12 +13,12 @@ namespace quasar::coro::await {
 ```
 
 ### `await::delegate<Coro>`
-This awaitable is constructed with any type `Coro` representing a valid coroutine. Control is transferred to this delgeted coroutine, which determines how control is returned to the awaiting coroutine. The `Coro` type must be compatible with the following interface, where `CallerPromise` is the promise type of the awaiting coroutine:
+This awaitable is constructed with any type `Coro` representing a valid coroutine. Control is transferred to this delgated coroutine, which determines how control is returned to the awaiting coroutine. The `Coro` type must be compatible with the following interface, where `CallerPromise` is the promise type of the awaiting coroutine:
 ```c++
 struct Promise {
 	void set_continuation(std::coroutine_handle<CallerPromise>);
-	void rethrow() const;       // optional
-	AnyType get_result() const; // optional
+	void rethrow();       // optional
+	AnyType get_result(); // optional
 };
 
 struct Coro {
@@ -44,10 +44,10 @@ namespace quasar::coro {
 The if the promise type provides a `void rethrow()` function it will be invoked after every resumption of the coroutine. This is to allow exception-handling promise types to re-raise exceptions to the calling function.
 
 ### `unique_coroutine`
-This handle type represents exclusive ownership of the coroutine frame. The frame is automatically cleaned up if the `unique_coroutine` onbject representing it is destroyed (e.g. by going out of scope). By `co_await`ing an r-value of this type, you can delegate to the represented coroutine. Upon completion of the delgeted coroutine, control will return to you
+This handle type represents exclusive ownership of the coroutine frame. The frame is automatically cleaned up if the `unique_coroutine` object representing it is destroyed (e.g. by going out of scope). By `co_await`ing an r-value of this type, you can delegate to the represented coroutine. Upon completion of the delgeted coroutine, control will return to you
 
 ## Promise Base Types
-The promise base types allow users to quickly & easily create custom promise types by simply inheriting the from 
+The promise base types allow users to quickly & easily create custom promise types by simply inheriting from them.
 
 ```c++
 namespace quasar::coro::promise {
@@ -77,4 +77,4 @@ namespace quasar::coro {
 ```
 
 ### `task<Result>`
-A task produces a single value of type `Result` asynchronously, with lazy initialization. 
+A task produces a single value of type `Result` asynchronously, with lazy initialization.
