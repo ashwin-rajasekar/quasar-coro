@@ -8,7 +8,7 @@ Building quasar-coro requires a c++23 compliant compiler. There are no external 
 ```cmake
 FetchContent_Declare(
 	quasar-coro
-	GIT_REPOSITORY git@github.com:/ashwin-rajasekar/quasar-coro.git
+	GIT_REPOSITORY https://github.com:/ashwin-rajasekar/quasar-coro
 	GIT_TAG main
 )
 
