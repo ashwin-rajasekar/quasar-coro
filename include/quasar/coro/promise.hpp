@@ -136,8 +136,9 @@ namespace quasar::coro::promise {
 		using Base::Base;
 		using Base::yield_value;
 
-		template<class Coro> requires (std::derived_from<Coro, std::coroutine_handle<typename Coro::promise_type>>)
-		auto yield_value(this auto& self, Coro&& task) noexcept {
+		template<class Coro> auto yield_value(this auto& self, Coro&& task) noexcept
+			requires requires { self.m_iterator->get_awaiter(self, std::move(task)); }
+		{
 			return self.m_iterator->get_awaiter(self, std::move(task));
 		}
 

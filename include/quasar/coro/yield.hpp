@@ -37,7 +37,10 @@ namespace quasar::coro {
 			return self;
 		}
 
-		template<class DelegaterPromise, class Delegatee> auto get_awaiter(DelegaterPromise& caller, Delegatee&& task) noexcept {
+		template<class DelegaterPromise, class Delegatee>
+		auto get_awaiter(DelegaterPromise& caller, Delegatee&& task) noexcept
+			requires requires { await::delegate<Delegatee>{std::move(task)}; }
+		{
 			struct awaiter : await::delegate<Delegatee> {
 				constexpr awaiter(yield_iterator& itr, DelegaterPromise& caller, Delegatee&& task) noexcept :
 					await::delegate<Delegatee>{std::move(task)},
