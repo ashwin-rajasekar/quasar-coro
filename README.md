@@ -3,7 +3,7 @@
 This is a library for supporting C++20 coroutines by making common coroutine handle types and providing base-classes as building blocks for creating custom promise types. All library-provided types are in the `quasar::coro` namespace.
 
 ## Using quasar-coro
-Building quasar-coro requires a c++23 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is build with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project via CMake's `FetchContent` or via git submodule reference. a CMake example is provided below:
+Building quasar-coro requires a c++23 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project via CMake's `FetchContent` or via git submodule reference. A CMake example is provided below:
 
 ```cmake
 FetchContent_Declare(
@@ -30,6 +30,9 @@ target_link_libraries(some_exe quasar::coro)
 	- [Continuation Support](#continuation-support)
 	- [`promise::result<T>`](#promiseresultt)
 	- [Yield Support](#yield-support)
+- [Utilities](#utilities)
+	- [`yield_iterator<T>`](#yield_iteratort)
+	- [`yield_range<Coro>`](#yield_rangecoro)
 - [Common Coroutine Types](#common-coroutine-types)
 	- [`task<Result>`](#taskresult)
 	- [`simple_generator<Yield, Result>` & `generator<Yield, Result>`](#simple_generatoryield-result--generatoryield-result)
@@ -166,6 +169,18 @@ quasar::coro::unique_coroutine<Promise2> coro2(){
 	co_yield "world";
 }
 ```
+## Utilities
+
+### `yield_iterator<T>`
+This type provides some iterator semantics such as the dereference, arrow & pre-increment operators and equality comparisons with `std::default_sentinel_t`.
+However it is neither copyable nor movable, since coroutine promises may need to keep references to it.
+As such it does not satisfy most iterator concepts besides `std::indirectly_readable`.
+
+### `yield_range<Coro>`
+This type is a simple wrapper around the provided coroutine type and provides a `begin()` & `end()` to allow it to interface with STL range functions.
+`begin()` returns a `yield iterator<T>` (deducing T from `promise().get_value()` of the provided coroutine).
+`end()` always returns `std::default_sentinel`.
+
 
 ## Common Coroutine Types
 Some common use-cases have generic promise types already available
