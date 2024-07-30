@@ -15,10 +15,10 @@ namespace quasar::coro {
 
 	template<class> struct task_promise;
 	template<class T> using task = unique_coroutine<task_promise<T>>;
-	
+
 	template<class, class> struct simple_generator_promise;
-	template<class Y, class R> using simple_generator = unique_coroutine<simple_generator_promise<Y, R>>;
-	
+	template<class Y, class R = void> using simple_generator = unique_coroutine<simple_generator_promise<Y, R>>;
+
 	template<class, class> struct generator_promise;
-	template<class Y, class R> using generator = unique_coroutine<generator_promise<Y, R>>;
+	template<class Y, class R = void> using generator = unique_coroutine<generator_promise<Y, R>>;
 }
