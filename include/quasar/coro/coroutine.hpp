@@ -11,6 +11,7 @@ namespace quasar::coro {
 		using handle = std::coroutine_handle<Promise>;
 
 		using handle::handle;
+		coroutine(handle hndl) noexcept : handle{hndl}{} // need to explicitly enable construction fomr base type
 		coroutine(Promise& prom) noexcept : handle{handle::from_promise(prom)}{}
 		coroutine(unique_coroutine<Promise>) = delete;
 
@@ -18,7 +19,7 @@ namespace quasar::coro {
 			handle::resume();
 			if constexpr(requires{ this->promise().rethrow(); }){ this->promise().rethrow(); }
 		}
-	
+
 		void operator()() const noexcept(noexcept(resume())) { resume(); }
 	};
 
@@ -26,7 +27,7 @@ namespace quasar::coro {
 		using coroutine<Promise>::coroutine;
 
 		unique_coroutine(coroutine<Promise> coro) noexcept : coroutine<Promise>{coro}{}
- 
+
 		unique_coroutine(unique_coroutine const&)            = delete;
 		unique_coroutine& operator=(unique_coroutine const&) = delete;
 
@@ -41,11 +42,11 @@ namespace quasar::coro {
 		constexpr ~unique_coroutine() noexcept {
 			if(*this){ this->destroy(); }
 		}
- 
+
 		await::delegate<unique_coroutine> operator co_await() && noexcept { return {std::move(*this)}; }
 
 		[[nodiscard]] coroutine<Promise> release() noexcept { return std::exchange<coroutine<Promise>>(*this, nullptr); }
-		
+
 		coroutine<Promise> get() const noexcept { return *this; }
 	};
 }
