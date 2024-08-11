@@ -43,6 +43,10 @@ namespace quasar::coro::promise {
 		std::suspend_always final_suspend() noexcept { return {}; }
 	};
 
+	struct destroy_on_finish {
+		std::suspend_never final_suspend() noexcept { return {}; }
+	};
+
 	template<bool pause_at_finish> struct delegatable {
 		static constexpr std::coroutine_handle<void> default_continuation() noexcept {
 			if constexpr(pause_at_finish){ return std::noop_coroutine(); }
@@ -151,6 +155,12 @@ namespace quasar::coro::promise {
 
 /** Common Promise Implementations **/
 namespace quasar::coro {
+	struct procedure_promise :
+		promise::base,
+		promise::nothrow,
+		promise::destroy_on_finish,
+		promise::result<void>{};
+
 	template<class Result> struct task_promise :
 		promise::base,
 		promise::unwind_on_exception,
