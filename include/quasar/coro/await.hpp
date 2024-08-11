@@ -27,4 +27,10 @@ namespace quasar::coro::await {
 
 		std::coroutine_handle<void> await_suspend(auto) const noexcept { return task; }
 	};
+
+	template<class T> struct fetch : std::suspend_never {
+		T value;
+
+		T await_resume() noexcept { return std::forward<T>(value); }
+	};
 }
