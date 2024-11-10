@@ -140,9 +140,10 @@ namespace quasar::coro::promise {
 		using Base::Base;
 		using Base::yield_value;
 
-		template<class Coro> auto yield_value(this auto& self, Coro&& task) noexcept
-			requires requires { self.m_iterator->get_awaiter(self, std::move(task)); }
-		{
+		template<class Coro> auto yield_value(this auto& self, Coro&& task) noexcept requires (
+			!std::same_as<std::remove_cvref_t<Coro>, std::remove_cvref_t<T>> &&
+			requires { self.m_iterator->get_awaiter(self, std::move(task)); }
+		){
 			return self.m_iterator->get_awaiter(self, std::move(task));
 		}
 
