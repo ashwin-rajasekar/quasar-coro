@@ -114,7 +114,11 @@ namespace quasar::coro::promise {
 			std::remove_reference_t<T>* m_yield;
 	};
 
-	template<typename T> requires ((sizeof(T) <= 2 * sizeof(void*)) && std::is_trivially_move_constructible_v<T>)
+	template<typename T> requires (
+		!std::is_reference_v<T>
+		(sizeof(T) <= 2 * sizeof(void*)) &&
+		std::is_trivially_move_constructible_v<T>\
+	)
 	struct yield_base<T> {
 		T get_value() noexcept { return std::move(m_yield); }
 
@@ -141,7 +145,7 @@ namespace quasar::coro::promise {
 		using Base::yield_value;
 
 		template<class Coro> auto yield_value(this auto& self, Coro&& task) noexcept requires (
-			!std::same_as<std::remove_cvref_t<Coro>, std::remove_cvref_t<T>> &&
+			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<T>> &&
 			requires { self.m_iterator->get_awaiter(self, std::move(task)); }
 		){
 			return self.m_iterator->get_awaiter(self, std::move(task));
