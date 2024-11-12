@@ -1,6 +1,6 @@
 #pragma once
 
-#include "await.hpp"
+#include "promise.hpp"
 
 #include <coroutine>
 #include <iterator>
@@ -65,6 +65,23 @@ namespace quasar::coro {
 			};
 
 			return awaiter{*this, caller, std::move(task)};
+		}
+
+		template<class Promise> void preempt(std::coroutine_handle<Promise> task){
+			task.promise().set_continuation(
+				[](auto& self, auto preemptor, auto preempted, auto getter, auto rethrow) -> procedure {
+					// this procedure manually handles cleanup since the preemptor is not bound to the lifetime of an object
+					preemptor.destroy();
+					// need to restore & resume the preempted since control has fallen off then end of the preemptor
+					(self.m_task = preempted).resume();
+					// restore the remainder of the yield_iterator to its original state
+					self.m_getter = getter;
+					self.m_rethrow = rethrow;
+
+					co_return;
+				}(*this, task, m_task, m_getter, m_rethrow).release()
+			);
+			bind(task.promise());
 		}
 
 		private:
