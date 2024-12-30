@@ -7,14 +7,59 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace quasar::coro::promise {
-	struct base {
-		template<class Self> coroutine<Self> get_return_object(this Self& self){ return {self}; }
+/** Some functions are either static or explicit-object depending on if the feature is available
+ *    if explicit-object functions are not available, the promise class must define the necessary member fuction for the
+ *    coroutine machinery, using the static base-class function as a default implementation */
+#if defined(__cpp_explicit_this_parameter) && __cpp_explicit_this_parameter >= 202110L
+#define eo_static
+#define eo_this this
 
-		std::suspend_always initial_suspend(){ return {}; }
+#else
+#define eo_unavailable
+#define eo_static static
+#define eo_this
+
+#endif
+
+namespace quasar::coro::promise {
+	namespace detail {
+		template<class T> struct capture {
+			static constexpr bool ref_type = std::is_reference_v<T>;
+
+			template<class U> void capture_value(U&& arg) requires (!ref_type){ m_value.emplace(std::forward<U>(arg)); }
+
+			T release_value() noexcept requires (!ref_type){ return std::move(*m_value); }
+
+			void capture_value(T arg) requires (ref_type){ m_value = &arg; }
+
+			T release_value() noexcept requires (ref_type){ return static_cast<T>(*m_value); }
+
+			T& get() noexcept { return *m_value; }
+
+			private:
+				std::conditional_t<
+					ref_type,
+					std::remove_reference_t<T>*,
+					std::optional<T>
+				> m_value = {};
+		};
+	}
+
+	struct base {
+		template<class Self> eo_static coroutine<Self> get_return_object(eo_this Self& self){ return {self}; }
 	};
 
 
+
+
+	/** Initialization Support **/
+	struct eager {
+		std::suspend_never initial_suspend(){ return {}; }
+	};
+
+	struct lazy {
+		std::suspend_always initial_suspend(){ return {}; }
+	};
 
 
 
@@ -71,31 +116,13 @@ namespace quasar::coro::promise {
 
 
 	/** Result Support **/
-	template<class T> struct result {
-		void return_value(auto&& arg){ m_result.emplace(std::move(arg)); }
+	template<class Result> struct result {
+		template<class T> void return_value(T&& arg){ m_result.capture_value(std::forward<T>(arg)); }
 
-		T get_result() noexcept { return std::move(*m_result); }
-
-		protected:
-			std::optional<T> m_result;
-	};
-
-	template<class T> requires (std::is_trivially_default_constructible_v<T>) struct result<T> {
-		void return_value(auto&& arg){ m_result = std::move(arg); }
-
-		T get_result() noexcept { return std::move(m_result); }
+		Result get_result() noexcept { return m_result.release_value(); }
 
 		protected:
-			T m_result;
-	};
-
-	template<class T> requires (std::is_reference_v<T>) struct result<T> {
-		void return_value(T arg){ m_result = &arg; }
-
-		T get_result() noexcept { return static_cast<T>(*m_result); }
-
-		protected:
-			std::remove_reference_t<T>* m_result;
+			detail::capture<Result> m_result = {};
 	};
 
 	template<> struct result<void> { void return_void(){} };
@@ -105,47 +132,26 @@ namespace quasar::coro::promise {
 
 
 	/** Yield Support **/
-	template<typename T> struct yield_base {
-		T get_value() noexcept { return static_cast<T>(*m_yield); }
-
-		protected:
-			void capture_value(T&& value) noexcept { m_yield = std::addressof(value); }
-
-			std::remove_reference_t<T>* m_yield;
-	};
-
-	template<typename T> requires (
-		!std::is_reference_v<T>
-		(sizeof(T) <= 2 * sizeof(void*)) &&
-		std::is_trivially_move_constructible_v<T>\
-	)
-	struct yield_base<T> {
-		T get_value() noexcept { return std::move(m_yield); }
-
-		protected:
-			void capture_value(auto&& value) noexcept { std::construct_at(&m_yield, std::move(value)); }
-
-			union {
-				std::byte dummy{};
-				T m_yield;
-			};
-	};
-
-	template<class T, bool async = false> struct yield : yield_base<T> {
-		auto yield_value(this auto& self, T&& value) noexcept {
-			self.capture_value(std::forward<T>(value));
+	template<class Yield, bool async = false> struct yield {
+		template<class T = Yield> eo_static auto yield_value(eo_this auto& self, T&& value) noexcept {
+			self.m_yield.capture_value(std::forward<T>(value));
 			if constexpr(async){ return self.intermediate_suspend(); }
 			else { return std::suspend_always{}; }
 		}
+
+		Yield get_value() noexcept { return m_yield.release_value(); }
+
+		protected:
+			detail::capture<Yield> m_yield = {};
 	};
 
-	template<class T, class Base = yield<T>, class YieldItr = yield_iterator<T>>
+	template<class Yield, class Base = yield<Yield>, class YieldItr = yield_iterator<Yield>>
 	struct delegating_yield : Base {
 		using Base::Base;
 		using Base::yield_value;
 
-		template<class Coro> auto yield_value(this auto& self, Coro&& task) noexcept requires (
-			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<T>> &&
+		template<class Coro> eo_static auto yield_value(eo_this auto& self, Coro&& task) noexcept requires (
+			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<Yield>> &&
 			requires { self.m_iterator->get_awaiter(self, std::move(task)); }
 		){
 			return self.m_iterator->get_awaiter(self, std::move(task));
@@ -162,21 +168,53 @@ namespace quasar::coro::promise {
 namespace quasar::coro {
 	struct procedure_promise :
 		promise::base,
+		promise::eager,
 		promise::nothrow,
 		promise::destroy_on_finish,
-		promise::result<void>{};
+		promise::result<void>
+	{
+		#ifdef eo_unavailable
+		auto get_return_object(){ return promise::base::get_return_object(*this); }
+		#endif
+	};
 
 	template<class Result> struct task_promise :
 		promise::base,
+		promise::lazy,
 		promise::unwind_on_exception,
 		promise::delegatable<true>,
-		promise::result<Result>{};
+		promise::result<Result>
+	{
+		#ifdef eo_unavailable
+		auto get_return_object(){ return promise::base::get_return_object(*this); }
+		#endif
+	};
 
 	template<class Yield, class Result> struct simple_generator_promise :
 		task_promise<Result>,
-		promise::yield<Yield>{};
+		promise::yield<Yield>
+	{
+		#ifdef eo_unavailable
+		auto get_return_object(){ return promise::base::get_return_object(*this); }
+
+		template<class T = Yield>
+		auto yield_value(T&& yield){ return promise::yield<Yield>::yield_value(*this, std::forward<T>(yield)); }
+		#endif
+	};
 
 	template<class Yield, class Result> struct generator_promise :
 		task_promise<Result>,
-		promise::delegating_yield<Yield>{};
+		promise::delegating_yield<Yield>
+	{
+		#ifdef eo_unavailable
+		auto get_return_object(){ return promise::base::get_return_object(*this); }
+
+		template<class T = Yield>
+		auto yield_value(T&& yield){ return promise::delegating_yield<Yield>::yield_value(*this, std::forward<T>(yield)); }
+		#endif
+	};
 }
+
+#undef eo_unavailable
+#undef eo_static
+#undef eo_this
