@@ -11,7 +11,7 @@ namespace quasar::coro {
 		using handle = std::coroutine_handle<Promise>;
 
 		using handle::handle;
-		coroutine(handle hndl) noexcept : handle{hndl}{} // need to explicitly enable construction fomr base type
+		coroutine(handle coro) noexcept : handle{coro}{} // need to explicitly enable construction from base type
 		coroutine(Promise& prom) noexcept : handle{handle::from_promise(prom)}{}
 		coroutine(unique_coroutine<Promise>) = delete;
 
