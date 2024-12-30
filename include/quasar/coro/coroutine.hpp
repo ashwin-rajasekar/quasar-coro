@@ -6,7 +6,7 @@
 #include <utility>
 
 namespace quasar::coro {
-	template<class Promise> struct [[nodiscard]] coroutine : std::coroutine_handle<Promise> {
+	template<class Promise> struct coroutine : std::coroutine_handle<Promise> {
 		using promise_type = Promise;
 		using handle = std::coroutine_handle<Promise>;
 
@@ -26,7 +26,7 @@ namespace quasar::coro {
 	template<class Promise> struct unique_coroutine : coroutine<Promise> {
 		using coroutine<Promise>::coroutine;
 
-		unique_coroutine(coroutine<Promise> coro) noexcept : coroutine<Promise>{coro}{}
+		constexpr unique_coroutine(coroutine<Promise> coro) noexcept : coroutine<Promise>{coro}{}
 
 		unique_coroutine(unique_coroutine const&)            = delete;
 		unique_coroutine& operator=(unique_coroutine const&) = delete;
@@ -45,7 +45,7 @@ namespace quasar::coro {
 
 		await::delegate<unique_coroutine> operator co_await() && noexcept { return {std::move(*this)}; }
 
-		[[nodiscard]] coroutine<Promise> release() noexcept { return std::exchange<coroutine<Promise>>(*this, nullptr); }
+		[[nodiscard]] constexpr auto release() noexcept { return std::exchange<coroutine<Promise>>(*this, nullptr); }
 
 		coroutine<Promise> get() const noexcept { return *this; }
 	};
