@@ -125,7 +125,7 @@ namespace quasar::coro::promise {
 			detail::capture<Result> m_result = {};
 	};
 
-	template<> struct result<void> { void return_void(){} };
+	template<class T> requires (std::is_void_v<T>) struct result<T> { void return_void(){} };
 
 
 
