@@ -14,7 +14,7 @@ namespace quasar::coro {
 
 
 	struct procedure_promise;
-	using procedure = unique_coroutine<procedure_promise>;
+	using procedure = coroutine<procedure_promise>;
 
 	template<class> struct task_promise;
 	template<class T> using task = unique_coroutine<task_promise<T>>;
