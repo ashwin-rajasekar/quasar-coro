@@ -46,7 +46,7 @@ namespace quasar::coro::promise {
 	}
 
 	struct base {
-		template<class Self> eo_static coroutine<Self> get_return_object(eo_this Self& self){ return {self}; }
+		template<class Self> eo_static auto get_return_object(eo_this Self& self){ return std::coroutine_handle<Self>::from_promise(self); }
 	};
 
 
