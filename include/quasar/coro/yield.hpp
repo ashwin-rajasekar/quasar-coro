@@ -31,10 +31,10 @@ namespace quasar::coro {
 			return std::addressof(tmp);
 		}
 
-		template<class Self> Self& operator ++(this Self& self){
-			if(self != std::default_sentinel){ self.m_task.resume(); }
-			self.m_rethrow(self.m_task);
-			return self;
+		yield_iterator& operator ++(){
+			if(*this != std::default_sentinel){ m_task.resume(); }
+			m_rethrow(m_task);
+			return *this;
 		}
 
 		template<class DelegaterPromise, class Delegatee>
