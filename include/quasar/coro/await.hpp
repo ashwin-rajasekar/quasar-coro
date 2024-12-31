@@ -28,6 +28,12 @@ namespace quasar::coro::await {
 		std::coroutine_handle<void> await_suspend(auto) const noexcept { return task; }
 	};
 
+	template<class Func> struct callback : std::suspend_always {
+		Func func;
+
+		auto await_suspend(auto coro) const noexcept { return func(coro); }
+	};
+
 	template<class T> struct fetch : std::suspend_never {
 		T value;
 

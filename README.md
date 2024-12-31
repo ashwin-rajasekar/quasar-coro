@@ -3,7 +3,10 @@
 This is a library for supporting C++20 coroutines by making common coroutine handle types and providing base-classes as building blocks for creating custom promise types. All library-provided types are in the `quasar::coro` namespace.
 
 ## Using quasar-coro
-Building quasar-coro requires a c++23 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project via CMake's `FetchContent` or via git submodule reference. A CMake example is provided below:
+Building quasar-coro requires a c++23 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project in :
+- CMake's `FetchContent`
+- git submodule reference & `add_subdirectory()`
+- `find_package` after installing the targets on your system
 
 ```cmake
 FetchContent_Declare(
@@ -12,7 +15,7 @@ FetchContent_Declare(
 	GIT_TAG main
 )
 
-FetchContent_Declare(quasar-coro)
+FetchContent_MakeAvailable(quasar-coro)
 
 add_executable(some_exe some_source.cpp)
 target_link_libraries(some_exe quasar::coro)
@@ -21,11 +24,13 @@ target_link_libraries(some_exe quasar::coro)
 - [Awaitables](#awaitables)
 	- [`await::delegate<Coro>`](#awaitdelegatecoro)
 	- [`await::handoff`](#awaithandoff)
+	- [`await::callback<Func>`](#awaitcallbackfunc)
 - [Coroutine Handle Types](#coroutine-handle-types)
 	- [`coroutine`](#coroutine)
 	- [`unique_coroutine`](#unique_coroutine)
 - [Promise Base Types](#coroutine-handle-types)
 	- [`base`](#promisebase)
+	- [Initialization Support](#initialization-support)
 	- [Exception Support](#exception-support)
 	- [Continuation Support](#continuation-support)
 	- [`promise::result<T>`](#promiseresultt)
@@ -44,6 +49,8 @@ The awaitable types provide the hook into the compiler coroutine machinery to al
 namespace quasar::coro::await {
 	template<class Coro> struct delegate;
 	struct handoff;
+	template<class T> struct fetch;
+	template<class Func> struct callback;
 }
 ```
 
@@ -70,6 +77,15 @@ This awaitable is constructed with a `std::coroutine_handle<void>` to which cont
 If the handle is `nullptr`, control remains in the awaiting coroutine without suspending.
 If the handle is `std::noop_coroutine()`, control is transferred back to the resumer.
 
+### `await::callback<Func>`
+This awaitable is constructed with an arbitrary function object that accepts a `std::coroutine_handle` representing the current coroutine frame.
+The return value of the function object, if any, is returned as the result of the awaitable's `await_suspend()` function.
+This awaitable type is meant to allow interfacing with callback-based APIs so that they can accept the current coroutine as a callback function.
+
+### `await::fetch<T>`
+This awaitable is constructed with an arbitrary value that is immediately returned to the awaiting coroutine, without suspending.
+It is meant to be used as a method of synchronously passing data in cases were a normal function return is not feasible, such as getting data into the coroutine frame from the promise object.
+
 ## Coroutine Handle Types
 The 2 main coroutine handle types provided are `coroutine` and `unique_coroutine`.
 They represent non-owning and owning handles to coroutine frames respectively.
@@ -81,7 +97,9 @@ namespace quasar::coro {
 }
 ```
 ### `coroutine`
-The if the promise type provides a `void rethrow()` function it will be invoked after every resumption of the coroutine.
+This handle type represents a non-owning reference of the coroutine frame.
+It can be constructed from a promise reference or from a `std::coroutine_handle` with the same promise type.
+If the promise type provides a `void rethrow()` function it will be invoked after every resumption of the coroutine.
 This is to allow exception-handling promise types to re-raise exceptions to the calling function.
 
 ### `unique_coroutine`
@@ -97,10 +115,14 @@ The promise base types allow users to quickly & easily create custom promise typ
 namespace quasar::coro::promise {
 	struct base;
 
+	struct eager;
+	struct lazy;
+
 	struct nothrow;
 	struct unwind_on_exception;
 
-	struct pause_at_finish;
+	struct pause_on_finish;
+	struct destroy_on_finish;
 	template<bool pause> struct delegatable;
 
 	template<class T> struct result;
@@ -111,19 +133,27 @@ namespace quasar::coro::promise {
 ```
 ### `promise::base`
 This type provides the `get_return_object()` function returning a `coroutine`.
-The result type of actual coroutines can be any type implicitly constructible from a `coroutine`.
+The result type of actual coroutines can be any type implicitly constructible from a `std::coroutine_handle`.
 
 ```c++
 struct Promise : quasar::coro::promise::base ... { ... };
 struct Handle {
 	using promise_type = Promise;
-	Handle(quasar::coro::coroutine);
+	Handle(std::coroutine_handle<promise_type>);
 };
 
 quasar::coro::coroutine<Promise> coro1(){ co_return; }
 quasar::coro::unique_coroutine<Promise> coro2(){ co_return; }
 Handle coro3(){ co_return; }
 ```
+
+### Initialization Support
+- `promise::eager`
+- `promise::lazy`
+
+The initialization support promise bases provide the `initial_suspend()` function required by the compiler for the coroutine machinery.
+`promise::eager` will result in a coroutine that begins executing when the coroutine is called.
+`promise::lazy` will result in a coroutine that suspends before beginning execution and will wait to be resumed by the caller.
 
 ### Exception Support
 - `promise::nothrow`
@@ -144,7 +174,7 @@ The continuation-support promise bases provide the `final_suspend()` function re
 It takes a single bool template parameter to indicate whether it should return control to its resumer (true) or continue past the final suspend point and self-destruct (false) if there is no continuation set.
 
 ### `promise::result<T>`
-This type provides the `return_value()` function (or the `return_void()` function if `T` is `void`), and the `get_result()` function which allows `await::delegate` to pass the returned value to the awaiting coroutine.
+This type provides the `return_value()` function (or the `return_void()` function if `T` is cv-`void`), and the `get_result()` function which allows `await::delegate` to pass the returned value to the awaiting coroutine.
 
 ```c++
 struct Promise : quasar::coro::promise::result<int> ... { ... };
@@ -154,7 +184,7 @@ SomeCoroutineType coro2(){ int x = co_await coro1(); }
 ```
 
 ### Yield Support
-`yield<T>` provides the `yield_value()` function (`T` must not be `void`), and the `get_value()` function which allows `yield_iterator<T>` to pass the yielded value to the awaiting coroutine.
+`yield<T>` provides the `yield_value()` function (`T` must not be cv-`void`), and the `get_value()` function which allows `yield_iterator<T>` to pass the yielded value to the awaiting coroutine.
 
 `delegating_yield<T>` provides an additional overload of `yield_value()` which allows `co_yield`ing another coroutine with the same yield type.
 Once the delegated coroutine has yielded all its values and completed, control returns to this coroutine.
@@ -178,7 +208,7 @@ As such it does not satisfy most iterator concepts besides `std::indirectly_read
 
 ### `yield_range<Coro>`
 This type is a simple wrapper around the provided coroutine type and provides a `begin()` & `end()` to allow it to interface with STL range functions.
-`begin()` returns a `yield iterator<T>` (deducing T from `promise().get_value()` of the provided coroutine).
+`begin()` returns a `yield iterator<T>` (deducing `T` from `promise().get_value()` of the provided coroutine).
 `end()` always returns `std::default_sentinel`.
 
 
