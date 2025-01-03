@@ -3,7 +3,7 @@
 This is a library for supporting C++20 coroutines by making common coroutine handle types and providing base-classes as building blocks for creating custom promise types. All library-provided types are in the `quasar::coro` namespace.
 
 ## Using quasar-coro
-Building quasar-coro requires a c++23 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project in :
+Building quasar-coro requires a c++20 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project in :
 - CMake's `FetchContent`
 - git submodule reference & `add_subdirectory()`
 - `find_package` after installing the targets on your system
