@@ -9,6 +9,6 @@ target_include_directories(coro INTERFACE
 	$<INSTALL_INTERFACE:include>
 )
 
-if(${PROJECT_IS_TOP_LEVEL})
-	include(cmake/install.cmake)
-endif()
+set(QUASAR_INSTALL_TARGETS coro)
+set(QUASAR_ARCH_INDEPENDENT true)
+include(cmake/install.cmake)
