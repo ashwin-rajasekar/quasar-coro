@@ -3,7 +3,7 @@
 This is a library for supporting C++20 coroutines by making common coroutine handle types and providing base-classes as building blocks for creating custom promise types. All library-provided types are in the `quasar::coro` namespace.
 
 ## Using quasar-coro
-Building quasar-coro requires a c++20 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project in :
+Building quasar-coro requires a c++20 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project via:
 - CMake's `FetchContent`
 - git submodule reference & `add_subdirectory()`
 - `find_package` after installing the targets on your system
@@ -49,8 +49,8 @@ The awaitable types provide the hook into the compiler coroutine machinery to al
 namespace quasar::coro::await {
 	template<class Coro> struct delegate;
 	struct handoff;
+	template<class... Ts> struct callback;
 	template<class T> struct fetch;
-	template<class Func> struct callback;
 }
 ```
 
@@ -77,10 +77,12 @@ This awaitable is constructed with a `std::coroutine_handle<void>` to which cont
 If the handle is `nullptr`, control remains in the awaiting coroutine without suspending.
 If the handle is `std::noop_coroutine()`, control is transferred back to the resumer.
 
-### `await::callback<Func>`
-This awaitable is constructed with an arbitrary function object that accepts a `std::coroutine_handle` representing the current coroutine frame.
-The return value of the function object, if any, is returned as the result of the awaitable's `await_suspend()` function.
+### `await::callback<Ts...>`
+This awaitable is constructed with an arbitrary function object (the functor) that accepts a callable of signature `void(Ts...)` (the completion handler).
+The functor is immediately invoked upon construction of the `callback` object, and is passed the completion handler; code inside the functor is free to copy the completion handler, but must not form references to it.
+If the completion handler is invoked inside the functor, the awaiting coroutine is not suspended and completes the `co_await` synchronously.
 This awaitable type is meant to allow interfacing with callback-based APIs so that they can accept the current coroutine as a callback function.
+Note that all types in `Ts...` must not be cv-`void` and must be move-constructible; reference types are permitted as well.
 
 ### `await::fetch<T>`
 This awaitable is constructed with an arbitrary value that is immediately returned to the awaiting coroutine, without suspending.

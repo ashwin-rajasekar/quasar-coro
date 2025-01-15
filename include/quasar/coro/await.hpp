@@ -1,6 +1,8 @@
 #pragma once
 
 #include <coroutine>
+#include <optional>
+#include <tuple>
 #include <utility>
 
 namespace quasar::coro::await {
@@ -30,14 +32,26 @@ namespace quasar::coro::await {
 		constexpr void await_resume() const noexcept {}
 	};
 
-	template<class Func> struct callback {
-		Func func;
+	template<class... Ts> requires ((!std::is_void_v<Ts>) && ...) struct callback {
+		constexpr callback(auto&& func){
+			func([this](Ts... args){
+				m_results.emplace(std::move(args)...);
+				if(m_task){ m_task.resume(); }
+			});
+		}
 
-		constexpr bool await_ready() const noexcept { return false; }
+		constexpr bool await_ready() const noexcept { return !!m_results; }
 
-		constexpr auto await_suspend(auto coro) const noexcept { return func(coro); }
+		constexpr void await_suspend(auto coro) noexcept { m_task = coro; }
 
-		constexpr void await_resume() const noexcept {}
+		constexpr auto await_resume() noexcept {
+			if constexpr(sizeof...(Ts) == 1){ return std::move(std::get<0>(*m_results)); }
+			else if constexpr(sizeof...(Ts) > 1){ return std::move(*m_results); }
+		}
+
+		private:
+			std::coroutine_handle<void> m_task = nullptr;
+			std::optional<std::tuple<Ts...>> m_results = std::nullopt;
 	};
 
 	template<class T> struct fetch {
@@ -45,7 +59,7 @@ namespace quasar::coro::await {
 
 		constexpr bool await_ready() const noexcept { return true; }
 
-		constexpr void await_suspend() const noexcept {}
+		constexpr void await_suspend(auto) const noexcept {}
 
 		constexpr T await_resume() noexcept { return std::forward<T>(value); }
 	};
