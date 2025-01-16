@@ -3,8 +3,12 @@
 namespace quasar::coro {
 	namespace await {
 		template<class> struct delegate;
-		template<class, class, class> struct yield_delegate;
+		struct handoff;
+		template<class...> struct callback;
+		template<class> struct fetch;
 	}
+
+
 
 	template<class> struct coroutine;
 	template<class> struct unique_coroutine;
