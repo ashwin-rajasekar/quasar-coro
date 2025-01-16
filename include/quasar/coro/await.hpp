@@ -51,7 +51,9 @@ namespace quasar::coro::await {
 		constexpr void await_resume() const noexcept {}
 	};
 
-	template<class... Ts> requires ((!std::is_void_v<Ts>) && ...) struct callback {
+	template<class... Ts> struct callback {
+		static_assert(((!std::is_void_v<Ts>) && ...), "void cannot be passed as a parameter");
+
 		constexpr callback(auto&& func){
 			func([this](Ts... args){
 				m_results.emplace(std::move(args)...);
