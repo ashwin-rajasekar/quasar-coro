@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(quasar-coro VERSION 0.1.0)
+project(quasar-coro VERSION 0.1.1)
 
 add_library(coro INTERFACE)
 add_library(quasar::coro ALIAS coro)
