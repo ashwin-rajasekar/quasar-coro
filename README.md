@@ -261,8 +261,8 @@ int func(){
 	// bad: the yield_range has now been destroyed by we didn't read the return value
 
 	auto range = quasar::coro::yield_range{outer()};
-	for(auto itr = range.begin(); itr != range.end(); ++itr){
-		std::println("message: '{}'", *itr);
+	for(std::string str : range){
+		std::println("message: '{}'", str);
 	}
 	return range.task.promise().get_result();
 	// good: the yield_range has kept the coroutine frame alive long enough to read the result
