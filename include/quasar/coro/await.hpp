@@ -66,7 +66,7 @@ namespace quasar::coro::await {
 		constexpr void await_suspend(auto coro) noexcept { m_task = coro; }
 
 		constexpr auto await_resume() noexcept {
-			if constexpr(sizeof...(Ts) == 1){ return std::move(std::get<0>(*m_results)); }
+			if constexpr(sizeof...(Ts) == 1){ return std::get<0>(std::move(*m_results)); }
 			else if constexpr(sizeof...(Ts) > 1){ return std::move(*m_results); }
 		}
 
