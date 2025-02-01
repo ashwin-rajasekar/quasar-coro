@@ -20,10 +20,10 @@
 #pragma once
 
 #include "await.hpp"
-#include "coroutine.hpp"
+#include "fwd.hpp"
 
+#include <exception>
 #include <optional>
-#include <stdexcept>
 #include <type_traits>
 
 /** Some functions are either static or explicit-object depending on if the feature is available
@@ -65,7 +65,8 @@ namespace quasar::coro::promise {
 	}
 
 	struct base {
-		template<class Self> eo_static auto get_return_object(eo_this Self& self){ return std::coroutine_handle<Self>::from_promise(self); }
+		template<class Self>
+		eo_static auto get_return_object(eo_this Self& self){ return std::coroutine_handle<Self>::from_promise(self); }
 	};
 
 
@@ -170,7 +171,7 @@ namespace quasar::coro::promise {
 		using Base::yield_value;
 
 		template<class Coro> eo_static auto yield_value(eo_this auto& self, Coro&& task) noexcept requires (
-			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<Yield>> &&
+			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<Yield>>&&
 			requires { self.m_iterator->get_awaiter(self, std::move(task)); }
 		){
 			return self.m_iterator->get_awaiter(self, std::move(task));

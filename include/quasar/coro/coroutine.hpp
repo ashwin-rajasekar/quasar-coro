@@ -34,12 +34,12 @@ namespace quasar::coro {
 		coroutine(Promise& prom) noexcept : handle{handle::from_promise(prom)}{}
 		coroutine(unique_coroutine<Promise>) = delete;
 
-		void resume() const noexcept(!requires{ this->promise().rethrow(); }){
+		void resume() const noexcept(!requires { this->promise().rethrow(); }){
 			handle::resume();
 			if constexpr(requires{ this->promise().rethrow(); }){ this->promise().rethrow(); }
 		}
 
-		void operator()() const noexcept(noexcept(resume())) { resume(); }
+		void operator ()() const noexcept(noexcept(resume())) { resume(); }
 	};
 
 	template<class Promise> struct unique_coroutine : coroutine<Promise> {
@@ -47,13 +47,13 @@ namespace quasar::coro {
 
 		constexpr unique_coroutine(coroutine<Promise> coro) noexcept : coroutine<Promise>{coro}{}
 
-		unique_coroutine(unique_coroutine const&)            = delete;
-		unique_coroutine& operator=(unique_coroutine const&) = delete;
+		unique_coroutine(unique_coroutine const&)             = delete;
+		unique_coroutine& operator =(unique_coroutine const&) = delete;
 
 		constexpr unique_coroutine(unique_coroutine&& other) noexcept :
 			coroutine<Promise>{std::exchange<coroutine<Promise>>(other, nullptr)}{}
 
-		constexpr unique_coroutine& operator=(unique_coroutine&& other) noexcept {
+		constexpr unique_coroutine& operator =(unique_coroutine&& other) noexcept {
 			std::swap<coroutine<Promise>>(*this, other);
 			return *this;
 		}

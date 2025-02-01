@@ -19,9 +19,9 @@
 
 #pragma once
 
+#include "coroutine.hpp"
 #include "promise.hpp"
 
-#include <coroutine>
 #include <iterator>
 
 namespace quasar::coro {
@@ -31,7 +31,7 @@ namespace quasar::coro {
 		void operator =(yield_iterator const&) = delete;
 		void operator =(yield_iterator&&)      = delete;
 
-		yield_iterator() noexcept = default;
+		yield_iterator()  noexcept = default;
 		~yield_iterator() noexcept = default;
 
 		template<class P> yield_iterator(std::coroutine_handle<P> coro){
