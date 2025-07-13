@@ -25,6 +25,8 @@ target_link_libraries(some_exe quasar::coro)
 	- [`await::delegate<Coro>`](#awaitdelegatecoro)
 	- [`await::handoff`](#awaithandoff)
 	- [`await::callback<Func>`](#awaitcallbackfunc)
+	- [`await::fetch<T>`](#awaitfetcht)
+	- [`await::barrier`](#awaitbarrier)
 - [Coroutine Handle Types](#coroutine-handle-types)
 	- [`coroutine`](#coroutine)
 	- [`unique_coroutine`](#unique_coroutine)
@@ -88,6 +90,11 @@ Note that all types in `Ts...` must not be cv-`void` and must be move-constructi
 ### `await::fetch<T>`
 This awaitable is constructed with an arbitrary value that is immediately returned to the awaiting coroutine, without suspending.
 It is meant to be used as a method of synchronously passing data in cases were a normal function return is not feasible, such as getting data into the coroutine frame from the promise object.
+
+### `await::barrier`
+This awaitable provides a `wait()` function to allow waiting on multiple coroutines to finish in no particular order.
+Every time `wait()` is called, its argument is immediately `co_await`ed internally, and `co_await`ing the barrier waits for all the `wait`ed tasks to complete before resuming.
+It is meant to be used as a synchronization mechanism when multiple asynchronous tasks can be completed in parallel with no inter-dependence.
 
 ## Coroutine Handle Types
 The 2 main coroutine handle types provided are `coroutine` and `unique_coroutine`.

@@ -25,6 +25,7 @@ namespace quasar::coro {
 		template<bool> struct handoff;
 		template<class...> struct callback;
 		template<class> struct fetch;
+		struct barrier;
 	}
 
 
