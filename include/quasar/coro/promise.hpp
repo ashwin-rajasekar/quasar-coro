@@ -120,12 +120,12 @@ namespace quasar::coro::promise {
 
 		void set_continuation(std::coroutine_handle<void> continuation) noexcept { m_continuation = continuation; }
 
-		await::handoff intermediate_suspend() noexcept {
+		await::handoff<false> intermediate_suspend() noexcept {
 			if(pause_at_finish || m_continuation){ return {.task = std::exchange(m_continuation, default_continuation())}; }
 			else { return {.task = std::noop_coroutine()}; }
 		}
 
-		await::handoff final_suspend() const noexcept { return {.task = m_continuation}; }
+		await::handoff<false> final_suspend() const noexcept { return {.task = m_continuation}; }
 
 		protected:
 			std::coroutine_handle<void> m_continuation = default_continuation();

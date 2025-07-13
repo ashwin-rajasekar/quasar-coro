@@ -22,7 +22,7 @@
 namespace quasar::coro {
 	namespace await {
 		template<class> struct delegate;
-		struct handoff;
+		template<bool> struct handoff;
 		template<class...> struct callback;
 		template<class> struct fetch;
 	}

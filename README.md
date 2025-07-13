@@ -48,7 +48,7 @@ The awaitable types provide the hook into the compiler coroutine machinery to al
 ```c++
 namespace quasar::coro::await {
 	template<class Coro> struct delegate;
-	struct handoff;
+	template<bool Destructive> struct handoff;
 	template<class... Ts> struct callback;
 	template<class T> struct fetch;
 }
@@ -72,10 +72,11 @@ struct Coro {
 };
 ```
 
-### `await::handoff`
+### `await::handoff<Destructive>`
 This awaitable is constructed with a `std::coroutine_handle<void>` to which control is transferred.
 If the handle is `nullptr`, control remains in the awaiting coroutine without suspending.
 If the handle is `std::noop_coroutine()`, control is transferred back to the resumer.
+If `Destructive` is true and control is actually transferred (i.e. the handle is not `nullptr`) then the calling coroutine frame is destroyed before the control transfer. This can be useful for coroutines not managed by the lifetime of an object.
 
 ### `await::callback<Ts...>`
 This awaitable is constructed with an arbitrary function object (the functor) that accepts a callable of signature `void(Ts...)` (the completion handler).

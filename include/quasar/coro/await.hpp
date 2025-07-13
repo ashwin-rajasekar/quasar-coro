@@ -41,12 +41,15 @@ namespace quasar::coro::await {
 		}
 	};
 
-	struct handoff {
+	template<bool Destructive> struct handoff {
 		std::coroutine_handle<void> task;
 
 		constexpr bool await_ready() const noexcept { return !task; }
 
-		constexpr std::coroutine_handle<void> await_suspend(auto) const noexcept { return task; }
+		constexpr std::coroutine_handle<void> await_suspend(std::coroutine_handle<void> caller) const noexcept {
+			if constexpr(Destructive){ caller.destroy(); }
+			return task;
+		}
 
 		constexpr void await_resume() const noexcept {}
 	};
