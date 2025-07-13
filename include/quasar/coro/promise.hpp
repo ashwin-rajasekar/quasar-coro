@@ -105,11 +105,11 @@ namespace quasar::coro::promise {
 
 	/** Continuation Support **/
 	struct pause_on_finish {
-		std::suspend_always final_suspend() noexcept { return {}; }
+		std::suspend_always final_suspend() const noexcept { return {}; }
 	};
 
 	struct destroy_on_finish {
-		std::suspend_never final_suspend() noexcept { return {}; }
+		std::suspend_never final_suspend() const noexcept { return {}; }
 	};
 
 	template<bool pause_at_finish> struct delegatable {
@@ -125,7 +125,7 @@ namespace quasar::coro::promise {
 			else { return {.task = std::noop_coroutine()}; }
 		}
 
-		await::handoff final_suspend() noexcept { return {.task = m_continuation}; }
+		await::handoff final_suspend() const noexcept { return {.task = m_continuation}; }
 
 		protected:
 			std::coroutine_handle<void> m_continuation = default_continuation();
