@@ -1,14 +1,13 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.28)
 
 project(quasar-coro VERSION 0.1.3)
 
 add_library(coro INTERFACE)
-add_library(quasar::coro ALIAS coro)
-target_include_directories(coro INTERFACE
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:include>
+target_sources(coro INTERFACE
+	FILE_SET HEADERS
+	BASE_DIRS include
+	FILES include/quasar/coro
 )
 
-set(QUASAR_INSTALL_TARGETS coro)
-set(QUASAR_ARCH_INDEPENDENT true)
+add_library(quasar::coro ALIAS coro)
 include(cmake/install.cmake)
