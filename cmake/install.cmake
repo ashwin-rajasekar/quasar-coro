@@ -23,11 +23,21 @@ install(
 )
 
 # Create Installation Target Set
-install(
-	TARGETS coro
-	EXPORT ${PROJECT_NAME}-config
-	FILE_SET HEADERS
-)
+if(QUASAR_CORO_MODULES)
+	install(
+		TARGETS coro coro-module
+		EXPORT ${PROJECT_NAME}-config
+		FILE_SET HEADERS
+		FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	)
+else()
+	install(
+		TARGETS coro
+		EXPORT ${PROJECT_NAME}-config
+		FILE_SET HEADERS
+	)
+endif()
 
 # Install Targets & Set Namespacing
 install(
