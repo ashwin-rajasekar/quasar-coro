@@ -1,8 +1,15 @@
-#include <quasar/coro/coroutine.hpp>
-#include <quasar/coro/promise.hpp>
-#include <quasar/coro/yield.hpp>
-
 #include <gtest/gtest.h>
+
+#ifndef QUASAR_CORO_MODULES
+	#include <quasar/coro/coroutine.hpp>
+	#include <quasar/coro/promise.hpp>
+	#include <quasar/coro/yield.hpp>
+
+#else
+	#include <coroutine>
+	import quasar.coro;
+
+#endif
 
 using namespace quasar::coro;
 
