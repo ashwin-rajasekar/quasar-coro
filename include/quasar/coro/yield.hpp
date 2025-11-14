@@ -22,7 +22,9 @@
 #include "coroutine.hpp"
 #include "promise.hpp"
 
-#include <iterator>
+#ifndef QUASAR_CORO_MODULES
+	#include <iterator>
+#endif
 
 namespace quasar::coro {
 	template<class T> struct yield_iterator {

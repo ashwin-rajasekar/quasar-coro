@@ -22,9 +22,11 @@
 #include "await.hpp"
 #include "fwd.hpp"
 
-#include <exception>
-#include <optional>
-#include <type_traits>
+#ifndef QUASAR_CORO_MODULES
+	#include <exception>
+	#include <optional>
+	#include <type_traits>
+#endif
 
 /** Some functions are either static or explicit-object depending on if the feature is available
  *    if explicit-object functions are not available, the promise class must define the necessary member fuction for the

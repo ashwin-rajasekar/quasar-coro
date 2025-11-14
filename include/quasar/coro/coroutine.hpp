@@ -22,7 +22,9 @@
 #include "await.hpp"
 #include "fwd.hpp"
 
-#include <utility>
+#ifndef QUASAR_CORO_MODULES
+	#include <utility>
+#endif
 
 namespace quasar::coro {
 	template<class Promise> struct coroutine : std::coroutine_handle<Promise> {

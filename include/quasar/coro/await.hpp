@@ -19,10 +19,12 @@
 
 #pragma once
 
-#include <coroutine>
-#include <optional>
-#include <tuple>
-#include <utility>
+#ifndef QUASAR_CORO_MODULES
+	#include <coroutine>
+	#include <optional>
+	#include <tuple>
+	#include <utility>
+#endif
 
 namespace quasar::coro::await {
 	template<class Coro> struct delegate {
