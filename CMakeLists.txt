@@ -10,4 +10,10 @@ target_sources(coro INTERFACE
 )
 
 add_library(quasar::coro ALIAS coro)
+
+include(CTest)
+if(BUILD_TESTING)
+	add_subdirectory(test)
+endif()
+
 include(cmake/install.cmake)
