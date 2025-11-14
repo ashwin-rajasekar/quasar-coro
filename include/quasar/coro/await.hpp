@@ -59,7 +59,7 @@ namespace quasar::coro::await {
 
 		constexpr callback(auto&& func){
 			func([this](Ts... args){
-				m_results.emplace(std::move(args)...);
+				m_results.emplace(std::forward<Ts...>(args)...);
 				if(m_task){ m_task.resume(); }
 			});
 		}
