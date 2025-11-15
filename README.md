@@ -3,23 +3,17 @@
 This is a library for supporting C++20 coroutines by making common coroutine handle types and providing base-classes as building blocks for creating custom promise types. All library-provided types are in the `quasar::coro` namespace.
 
 ## Using quasar-coro
-Building quasar-coro requires a c++20 compliant compiler. There are no external library dependencies, and the library is currently header-only (though this may change in the future due to implementation needs). The library is built with CMake and produces a single target `quasar::coro` that consumers should link against. The library can be included in a project via:
-- CMake's `FetchContent`
-- git submodule reference & `add_subdirectory()`
+Building quasar-coro requires a c++20 compliant compiler. The core library has no external dependencies.
+When built, the library produces the `quasar::coro` CMake target, which consumers may link against.
+During configuration, the following options may also be passed to CMake:
+- `BUILD_TESTING` (default TRUE) Conrols whether units test are built. Requires GTest.
+- `QUASAR_CORO_MODULES` (default FALSE) Controls whether module targets are built. Creates additional target `quasar::coro-module` to allow consumers to `import quasar.coro`.
+
+The library can be included in a CMake project via:
 - `find_package` after installing the targets on your system
+- `FetchContent`
+- git submodule reference & `add_subdirectory()`
 
-```cmake
-FetchContent_Declare(
-	quasar-coro
-	GIT_REPOSITORY https://github.com:/ashwin-rajasekar/quasar-coro
-	GIT_TAG main
-)
-
-FetchContent_MakeAvailable(quasar-coro)
-
-add_executable(some_exe some_source.cpp)
-target_link_libraries(some_exe quasar::coro)
-```
 # Library Overview
 - [Awaitables](#awaitables)
 	- [`await::delegate<Coro>`](#awaitdelegatecoro)
