@@ -19,6 +19,11 @@ namespace {
 
 		test_promise(std::vector<int>& vec, auto...) : output{vec}{}
 		~test_promise() noexcept { output.push_back(-1); }
+
+		#if !defined(__cpp_explicit_this_parameter) || __cpp_explicit_this_parameter < 202110L
+			// need to explicitly define this function in c++20 mode
+			auto get_return_object(){ return promise::base::get_return_object(*this); }
+		#endif
 	};
 
 	task<int> inner(std::vector<int>& output){
