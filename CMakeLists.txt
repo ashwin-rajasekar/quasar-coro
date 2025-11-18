@@ -11,6 +11,10 @@ target_sources(coro INTERFACE
 	FILES include/quasar/coro
 )
 
+if(${CMAKE_CXX_STANDARD} LESS 23)
+	target_compile_definitions(coro INTERFACE QUASAR_CORO_NO_EXPLICIT_OBJECT)
+endif()
+
 if(QUASAR_CORO_MODULES)
 	add_library(coro-module)
 	add_library(quasar::coro-module ALIAS coro-module)

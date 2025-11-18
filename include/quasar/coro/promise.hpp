@@ -31,14 +31,13 @@
 /** Some functions are either static or explicit-object depending on if the feature is available
  *    if explicit-object functions are not available, the promise class must define the necessary member fuction for the
  *    coroutine machinery, using the static base-class function as a default implementation */
-#if defined(__cpp_explicit_this_parameter) && __cpp_explicit_this_parameter >= 202110L
-#define eo_static
-#define eo_this this
-
-#else
-#define eo_unavailable
+#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
 #define eo_static static
 #define eo_this
+
+#else
+#define eo_static
+#define eo_this this
 
 #endif
 
@@ -195,7 +194,7 @@ namespace quasar::coro {
 		promise::destroy_on_finish,
 		promise::result<void>
 	{
-		#ifdef eo_unavailable
+		#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
 		auto get_return_object(){ return promise::base::get_return_object(*this); }
 		#endif
 	};
@@ -207,7 +206,7 @@ namespace quasar::coro {
 		promise::delegatable<true>,
 		promise::result<Result>
 	{
-		#ifdef eo_unavailable
+		#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
 		auto get_return_object(){ return promise::base::get_return_object(*this); }
 		#endif
 	};
@@ -216,7 +215,7 @@ namespace quasar::coro {
 		task_promise<Result>,
 		promise::yield<Yield>
 	{
-		#ifdef eo_unavailable
+		#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
 		auto get_return_object(){ return promise::base::get_return_object(*this); }
 
 		template<class T = Yield>
@@ -228,7 +227,7 @@ namespace quasar::coro {
 		task_promise<Result>,
 		promise::delegating_yield<Yield>
 	{
-		#ifdef eo_unavailable
+		#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
 		auto get_return_object(){ return promise::base::get_return_object(*this); }
 
 		template<class T = Yield>
@@ -237,6 +236,5 @@ namespace quasar::coro {
 	};
 }
 
-#undef eo_unavailable
 #undef eo_static
 #undef eo_this
