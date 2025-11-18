@@ -48,4 +48,23 @@ namespace quasar::coro {
 
 	template<class, class> struct generator_promise;
 	template<class Y, class R = void> using generator = unique_coroutine<generator_promise<Y, R>>;
+
+	namespace promise {
+		struct base;
+
+		struct eager;
+		struct lazy;
+
+		struct nothrow;
+		struct unwind_on_exception;
+
+		struct pause_on_finish;
+		struct destroy_on_finish;
+		template<bool> struct delegatable;
+
+		template<class> struct result;
+
+		template<class, bool> struct yield;
+		template<class, class, class> struct delegating_yield;
+	}
 }

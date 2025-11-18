@@ -29,41 +29,12 @@ module;
 
 export module quasar.coro;
 
-export namespace quasar::coro {
-	namespace await {
-		template<class> struct delegate;
-		template<bool> struct handoff;
-		template<class...> struct callback;
-		template<class> struct fetch;
-		struct barrier;
-	}
-
-
-
-	template<class> struct coroutine;
-	template<class> struct unique_coroutine;
-
-	template<class> struct yield_iterator;
-	template<class> struct yield_range;
-
-
-
-	struct procedure_promise;
-	using procedure = coroutine<procedure_promise>;
-
-	template<class> struct task_promise;
-	template<class T> using task = unique_coroutine<task_promise<T>>;
-
-	template<class, class> struct simple_generator_promise;
-	template<class Y, class R = void> using simple_generator = unique_coroutine<simple_generator_promise<Y, R>>;
-
-	template<class, class> struct generator_promise;
-	template<class Y, class R = void> using generator = unique_coroutine<generator_promise<Y, R>>;
+export {
+#include "quasar/coro/fwd.hpp"
 }
 
 #include "quasar/coro/await.hpp"
-#include "quasar/coro/barrier.hpp"
 #include "quasar/coro/coroutine.hpp"
-#include "quasar/coro/fwd.hpp"
 #include "quasar/coro/promise.hpp"
+#include "quasar/coro/barrier.hpp"
 #include "quasar/coro/yield.hpp"
