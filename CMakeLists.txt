@@ -6,7 +6,7 @@ if(QUASAR_CORO_MODULES)
 	add_library(coro)
 	set(visibility PUBLIC)
 
-	# target_compile_features(coro PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
+	target_compile_features(coro PUBLIC cxx_std_20)
 	target_compile_definitions(coro PUBLIC QUASAR_CORO_MODULES)
 	set_target_properties(coro PROPERTIES LINKER_LANGUAGE CXX)
 	target_sources(coro PUBLIC
