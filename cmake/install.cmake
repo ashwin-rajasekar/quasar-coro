@@ -1,6 +1,13 @@
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+# Generate Package Config
+configure_package_config_file(
+	${CMAKE_CURRENT_LIST_DIR}/config.cmake
+	${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+	INSTALL_DESTINATION . # unused but required
+)
+
 # Generate Package Version Config
 write_basic_package_version_file(
 	${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
@@ -10,7 +17,9 @@ write_basic_package_version_file(
 
 # Install Package Config & Version Config
 install(
-	FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+	FILES
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
 )
 
@@ -26,21 +35,21 @@ install(
 if(QUASAR_CORO_MODULES)
 	install(
 		TARGETS coro
-		EXPORT ${PROJECT_NAME}-config
+		EXPORT ${PROJECT_NAME}-targets
 		FILE_SET HEADERS
 		FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	)
 else()
 	install(
 		TARGETS coro
-		EXPORT ${PROJECT_NAME}-config
+		EXPORT ${PROJECT_NAME}-targets
 		FILE_SET HEADERS
 	)
 endif()
 
 # Install Targets & Set Namespacing
 install(
-	EXPORT ${PROJECT_NAME}-config
+	EXPORT ${PROJECT_NAME}-targets
 	NAMESPACE quasar::
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}
 )
