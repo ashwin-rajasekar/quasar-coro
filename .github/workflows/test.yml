@@ -23,6 +23,7 @@ jobs:
       matrix:
         cpp_std: [ 20, 23 ]
         os: [ ubuntu-latest, windows-latest ]
+        c_compiler: [ gcc, clang, cl ]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
@@ -38,8 +39,22 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             build_type: Release
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+
+          - os: windows-latest
+            c_compiler: clang
+
+          - os: ubuntu-latest
+            c_compiler: cl
 
     steps:
+    - name: Install Dependencies
+      shell: bash
+      run:
+        apt install -y googletest libgtest-dev
+
     - uses: actions/checkout@v4
 
     - name: Set reusable strings
@@ -48,9 +63,7 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+    - name: Configure
       run: >
         cmake
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
