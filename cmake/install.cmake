@@ -25,11 +25,10 @@ install(
 # Create Installation Target Set
 if(QUASAR_CORO_MODULES)
 	install(
-		TARGETS coro coro-module
+		TARGETS coro
 		EXPORT ${PROJECT_NAME}-config
 		FILE_SET HEADERS
 		FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		CXX_MODULES_BMI DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	)
 else()
 	install(
