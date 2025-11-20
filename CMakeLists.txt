@@ -7,7 +7,7 @@ if(QUASAR_CORO_MODULES)
 	set(visibility PUBLIC)
 
 	target_compile_features(coro PUBLIC cxx_std_20)
-	target_compile_definitions(coro PUBLIC QUASAR_CORO_MODULES)
+	target_compile_definitions(coro PRIVATE QUASAR_CORO_MODULES)
 	set_target_properties(coro PROPERTIES LINKER_LANGUAGE CXX)
 	target_sources(coro PUBLIC
 		FILE_SET CXX_MODULES
