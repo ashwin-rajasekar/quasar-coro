@@ -33,19 +33,15 @@ install(
 
 # Create Installation Target Set
 if(QUASAR_CORO_MODULES)
-	install(
-		TARGETS coro
-		EXPORT ${PROJECT_NAME}-targets
-		FILE_SET HEADERS
-		FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	)
-else()
-	install(
-		TARGETS coro
-		EXPORT ${PROJECT_NAME}-targets
-		FILE_SET HEADERS
-	)
+	set(QUASR_CORO_MODULES_ARTIFACTS FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
+
+install(
+	TARGETS coro
+	EXPORT ${PROJECT_NAME}-targets
+	FILE_SET HEADERS
+	${QUASR_CORO_MODULES_ARTIFACTS}
+)
 
 # Install Targets & Set Namespacing
 install(
