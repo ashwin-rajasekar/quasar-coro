@@ -53,7 +53,7 @@ jobs:
     - name: Install Dependencies
       shell: bash
       run:
-        apt install -y googletest libgtest-dev
+        sudo apt install -y googletest libgtest-dev
 
     - uses: actions/checkout@v4
 
