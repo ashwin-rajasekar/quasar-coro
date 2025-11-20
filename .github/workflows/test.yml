@@ -53,6 +53,7 @@ jobs:
         -DCMAKE_CXX_STANDARD=${{ matrix.cpp_std }}
         -DCMAKE_CXX_STANDARD_REQUIRED=TRUE
         -DCMAKE_CXX_EXTENSIONS=FALSE
+        -DQUASAR_CORO_MODULES=TRUE
         -B ${{ steps.strings.outputs.build-output-dir }}
         -S ${{ github.workspace }}
         -G Ninja
