@@ -33,6 +33,8 @@ export {
 #include "quasar/coro/fwd.hpp"
 }
 
+#define QUASAR_CORO_MODULES
+
 #include "quasar/coro/await.hpp"
 #include "quasar/coro/coroutine.hpp"
 #include "quasar/coro/promise.hpp"
