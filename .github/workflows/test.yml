@@ -46,7 +46,7 @@ jobs:
     - name: Install Dependencies
       shell: bash
       run:
-        vcpkg install googletest
+        vcpkg install gtest
 
     - uses: actions/checkout@v4
 
