@@ -19,6 +19,10 @@
 
 #pragma once
 
+#if !defined(__cpp_explicit_this_parameter) ||  __cpp_explicit_this_parameter < 202110L
+	#define QUASAR_CORO_NO_EXPLICIT_OBJECT
+#endif
+
 namespace quasar::coro {
 	namespace await {
 		template<class> struct delegate;
