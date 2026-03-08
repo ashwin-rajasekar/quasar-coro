@@ -20,18 +20,16 @@
 #pragma once
 
 #include "await.hpp"
-#include "fwd.hpp"
 
-#ifndef QUASAR_CORO_MODULES
-	#include <exception>
-	#include <optional>
-	#include <type_traits>
-#endif
+#include <exception>
+#include <optional>
+#include <type_traits>
 
 /** Some functions are either static or explicit-object depending on if the feature is available
  *    if explicit-object functions are not available, the promise class must define the necessary member fuction for the
  *    coroutine machinery, using the static base-class function as a default implementation */
-#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
+#if !defined(__cpp_explicit_this_parameter) ||  __cpp_explicit_this_parameter < 202110L
+#define QUASAR_CORO_NO_EXPLICIT_OBJECT
 #define eo_static static
 #define eo_this
 
@@ -41,30 +39,34 @@
 
 #endif
 
-namespace quasar::coro::promise {
-	namespace detail {
-		template<class T> struct capture {
-			static constexpr bool ref_type = std::is_reference_v<T>;
+#ifndef QUASAR_CORO_EXPORT
+	#define QUASAR_CORO_EXPORT
+#endif
 
-			template<class U> void capture_value(U&& arg) requires (!ref_type){ m_value.emplace(std::forward<U>(arg)); }
+namespace quasar::coro::promise::detail {
+	template<class T> struct capture {
+		static constexpr bool ref_type = std::is_reference_v<T>;
+	
+		template<class U> void capture_value(U&& arg) requires (!ref_type){ m_value.emplace(std::forward<U>(arg)); }
+	
+		T release_value() noexcept requires (!ref_type){ return std::move(*m_value); }
+	
+		void capture_value(T arg) requires (ref_type){ m_value = &arg; }
+	
+		T release_value() noexcept requires (ref_type){ return static_cast<T>(*m_value); }
+	
+		T& get() noexcept { return *m_value; }
+	
+		private:
+			std::conditional_t<
+				ref_type,
+				std::remove_reference_t<T>*,
+				std::optional<T>
+			> m_value = {};
+	};
+}
 
-			T release_value() noexcept requires (!ref_type){ return std::move(*m_value); }
-
-			void capture_value(T arg) requires (ref_type){ m_value = &arg; }
-
-			T release_value() noexcept requires (ref_type){ return static_cast<T>(*m_value); }
-
-			T& get() noexcept { return *m_value; }
-
-			private:
-				std::conditional_t<
-					ref_type,
-					std::remove_reference_t<T>*,
-					std::optional<T>
-				> m_value = {};
-		};
-	}
-
+QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 	struct base {
 		template<class Self>
 		eo_static auto get_return_object(eo_this Self& self){ return std::coroutine_handle<Self>::from_promise(self); }
@@ -153,6 +155,8 @@ namespace quasar::coro::promise {
 
 
 	/** Yield Support **/
+	template<class> struct yield_iterator;
+
 	template<class Yield, bool async = false> struct yield {
 		template<class T = Yield> eo_static auto yield_value(eo_this auto& self, T&& value) noexcept {
 			self.m_yield.capture_value(std::forward<T>(value));
@@ -186,7 +190,7 @@ namespace quasar::coro::promise {
 }
 
 /** Common Promise Implementations **/
-namespace quasar::coro {
+QUASAR_CORO_EXPORT namespace quasar::coro {
 	struct procedure_promise :
 		promise::base,
 		promise::eager,
@@ -238,3 +242,4 @@ namespace quasar::coro {
 
 #undef eo_static
 #undef eo_this
+#undef QUASAR_CORO_NO_EXPLICIT_OBJECT
