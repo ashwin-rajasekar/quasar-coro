@@ -6,8 +6,8 @@ This is a library for supporting C++20 coroutines by making common coroutine han
 Building quasar-coro requires a c++20 compliant compiler. The core library has no external dependencies.
 When built, the library produces the `quasar::coro` CMake target, which consumers may link against.
 During configuration, the following options may also be passed to CMake:
-- `BUILD_TESTING` (default TRUE) Conrols whether units test are built. Requires GTest.
-- `QUASAR_CORO_MODULES` (default FALSE) Controls whether module targets are built. Creates additional target `quasar::coro-module` to allow consumers to `import quasar.coro`.
+- `BUILD_TESTING` (default TRUE) Controls whether units test are built. Requires GTest.
+- `QUASAR_CORO_MODULES` (default FALSE) Controls whether the `quasar::coro` target is a c++ module or a header set.
 
 The library can be included in a CMake project via:
 - `find_package` after installing the targets on your system
