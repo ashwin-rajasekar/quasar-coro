@@ -22,11 +22,9 @@
 #include "coroutine.hpp"
 #include "promise.hpp"
 
-#ifndef QUASAR_CORO_MODULES
-	#include <iterator>
-#endif
+#include <iterator>
 
-namespace quasar::coro {
+QUASAR_CORO_EXPORT namespace quasar::coro {
 	template<class T> struct yield_iterator {
 		yield_iterator(yield_iterator const&)  = delete;
 		yield_iterator(yield_iterator&&)       = delete;

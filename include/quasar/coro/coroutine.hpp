@@ -20,13 +20,18 @@
 #pragma once
 
 #include "await.hpp"
-#include "fwd.hpp"
+#include "promise.hpp"
 
-#ifndef QUASAR_CORO_MODULES
-	#include <utility>
+#include <coroutine>
+#include <utility>
+
+#ifndef QUASAR_CORO_EXPORT
+	#define QUASAR_CORO_EXPORT
 #endif
 
-namespace quasar::coro {
+QUASAR_CORO_EXPORT namespace quasar::coro {
+	template<class> struct unique_coroutine;
+
 	template<class Promise> struct coroutine : std::coroutine_handle<Promise> {
 		using promise_type = Promise;
 		using handle = std::coroutine_handle<Promise>;
@@ -70,4 +75,12 @@ namespace quasar::coro {
 
 		coroutine<Promise> get() const noexcept { return *this; }
 	};
+
+	using procedure = coroutine<procedure_promise>;
+	
+	template<class T> using task = unique_coroutine<task_promise<T>>;
+	
+	template<class Y, class R = void> using simple_generator = unique_coroutine<simple_generator_promise<Y, R>>;
+	
+	template<class Y, class R = void> using generator = unique_coroutine<generator_promise<Y, R>>;
 }

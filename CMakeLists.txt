@@ -13,6 +13,7 @@ if(QUASAR_CORO_MODULES)
 		BASE_DIRS src
 		FILES src/quasar.coro.cpp
 	)
+	target_compile_definitions(coro PUBLIC QUASAR_CORO_EXPORT=export QUASAR_CORO_MODULES)
 else()
 	add_library(coro INTERFACE)
 	target_sources(coro INTERFACE
@@ -20,6 +21,7 @@ else()
 		BASE_DIRS include
 		FILES include/quasar/coro
 	)
+	target_compile_definitions(coro PUBLIC QUASAR_CORO_EXPORT)
 endif()
 
 add_library(quasar::coro ALIAS coro)

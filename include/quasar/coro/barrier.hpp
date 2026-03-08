@@ -22,7 +22,7 @@
 #include "coroutine.hpp"
 #include "promise.hpp"
 
-namespace quasar::coro::await {
+QUASAR_CORO_EXPORT namespace quasar::coro::await {
 	struct barrier {
 		constexpr bool await_ready() const noexcept { return !m_count; }
 
