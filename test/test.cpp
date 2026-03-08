@@ -2,7 +2,6 @@
 
 #ifndef QUASAR_CORO_MODULES
 	#include <quasar/coro/coroutine.hpp>
-	#include <quasar/coro/promise.hpp>
 	#include <quasar/coro/yield.hpp>
 
 #else
@@ -20,7 +19,7 @@ namespace {
 		test_promise(std::vector<int>& vec, auto...) : output{vec}{}
 		~test_promise() noexcept { output.push_back(-1); }
 
-		#ifdef QUASAR_CORO_NO_EXPLICIT_OBJECT
+		#if __cplusplus == 202002L // c++20 mode; explicit object member functions not available
 			// need to explicitly define this function in c++20 mode
 			auto get_return_object(){ return promise::base::get_return_object(*this); }
 		#endif
