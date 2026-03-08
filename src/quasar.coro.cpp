@@ -16,7 +16,7 @@
  *  Lesser Public License along with this software; see the files COPYING and
  *  COPYING.LESSER respectively.  If not, see <http://www.gnu.org/licenses/>.
  **/
- 
+
 module;
 
 #include <coroutine>

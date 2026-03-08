@@ -46,17 +46,17 @@
 namespace quasar::coro::promise::detail {
 	template<class T> struct capture {
 		static constexpr bool ref_type = std::is_reference_v<T>;
-	
+
 		template<class U> void capture_value(U&& arg) requires (!ref_type){ m_value.emplace(std::forward<U>(arg)); }
-	
+
 		T release_value() noexcept requires (!ref_type){ return std::move(*m_value); }
-	
+
 		void capture_value(T arg) requires (ref_type){ m_value = &arg; }
-	
+
 		T release_value() noexcept requires (ref_type){ return static_cast<T>(*m_value); }
-	
+
 		T& get() noexcept { return *m_value; }
-	
+
 		private:
 			std::conditional_t<
 				ref_type,
