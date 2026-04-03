@@ -124,7 +124,7 @@ QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 			else { return {.task = std::noop_coroutine()}; }
 		}
 
-		await::handoff<false> final_suspend() const noexcept { return {.task = m_continuation}; }
+		await::handoff<!pause_at_finish> final_suspend() const noexcept { return {.task = m_continuation}; }
 
 		protected:
 			std::coroutine_handle<void> m_continuation = default_continuation();
