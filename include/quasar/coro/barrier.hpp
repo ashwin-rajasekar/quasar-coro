@@ -30,20 +30,22 @@ QUASAR_CORO_EXPORT namespace quasar::coro::await {
 
 		constexpr void await_resume() const noexcept {}
 
-		template<class Coro> void wait(Coro&& coro) noexcept {
+		void wait(auto&& coro) noexcept requires requires { coro.promise().return_void(); }{
 			if(!coro || coro.done()){ return; }
 
 			++m_count;
-			handler(std::forward<Coro>(coro));
+			coro.promise().set_continuation(handler(coro));
+			if constexpr(requires { coro.release(); }){ return coro.release().resume(); }
+			else { return coro.resume(); }
 		}
 
 		private:
-			procedure handler(auto task) {
-				co_await std::move(task);
+			coroutine<task_promise<void>> handler(std::coroutine_handle<void> coro){
+				if(coro){ coro.destroy(); }
 				co_await await::handoff<true>{.task = --m_count? nullptr : m_continuation};
 			}
 
 			std::size_t m_count = 0;
-			std::coroutine_handle<void> m_continuation;
+			std::coroutine_handle<void> m_continuation = nullptr;
 	};
 }
