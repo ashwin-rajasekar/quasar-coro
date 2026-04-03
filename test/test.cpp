@@ -48,6 +48,13 @@ namespace {
 		output.push_back(3);
 		co_await await::handoff<true>{routine};
 	}
+
+	procedure barrier_test(std::vector<int>& output){
+		await::barrier b{};
+		b.wait(simple_delegate(output));
+		co_await b;
+		output.push_back(5);
+	}
 }
 
 TEST(AwaiterTest, SimpleDelegate){
@@ -73,5 +80,11 @@ TEST(AwaiterTest, DestructiveHandoff){
 		auto task = destructive_handoff(checkpoints, routine);
 		task();
 	}
+	EXPECT_EQ(checkpoints, expected);
+}
+
+TEST(AwaiterTest, Barrier){
+	std::vector<int> checkpoints, expected{3, 1, 2, 4, 5};
+	barrier_test(checkpoints);
 	EXPECT_EQ(checkpoints, expected);
 }
