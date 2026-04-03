@@ -39,10 +39,6 @@
 
 #endif
 
-#ifndef QUASAR_CORO_EXPORT
-	#define QUASAR_CORO_EXPORT
-#endif
-
 namespace quasar::coro::promise::detail {
 	template<class T> struct capture {
 		static constexpr bool ref_type = std::is_reference_v<T>;
