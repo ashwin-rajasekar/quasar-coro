@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(quasar-coro VERSION 0.2.1)
+project(quasar-coro VERSION 0.2.2)
 
 if(QUASAR_CORO_MODULES)
 	add_library(coro)
