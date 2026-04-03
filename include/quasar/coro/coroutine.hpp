@@ -25,10 +25,6 @@
 #include <coroutine>
 #include <utility>
 
-#ifndef QUASAR_CORO_EXPORT
-	#define QUASAR_CORO_EXPORT
-#endif
-
 QUASAR_CORO_EXPORT namespace quasar::coro {
 	template<class> struct unique_coroutine;
 

@@ -13,7 +13,7 @@ if(QUASAR_CORO_MODULES)
 		BASE_DIRS src
 		FILES src/quasar.coro.cpp
 	)
-	target_compile_definitions(coro PUBLIC QUASAR_CORO_EXPORT=export QUASAR_CORO_MODULES)
+	target_compile_definitions(coro PRIVATE QUASAR_CORO_EXPORT=export PUBLIC QUASAR_CORO_MODULES)
 else()
 	add_library(coro INTERFACE)
 	target_sources(coro INTERFACE
