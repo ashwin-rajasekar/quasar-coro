@@ -30,12 +30,12 @@
  *    coroutine machinery, using the static base-class function as a default implementation */
 #if !defined(__cpp_explicit_this_parameter) ||  __cpp_explicit_this_parameter < 202110L
 #define QUASAR_CORO_NO_EXPLICIT_OBJECT
-#define eo_static static
-#define eo_this
+#define QUASAR_CORO_EO_STATIC static
+#define QUASAR_CORO_EO_THIS
 
 #else
-#define eo_static
-#define eo_this this
+#define QUASAR_CORO_EO_STATIC
+#define QUASAR_CORO_EO_THIS this
 
 #endif
 
@@ -65,7 +65,9 @@ namespace quasar::coro::promise::detail {
 QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 	struct base {
 		template<class Self>
-		eo_static auto get_return_object(eo_this Self& self){ return std::coroutine_handle<Self>::from_promise(self); }
+		QUASAR_CORO_EO_STATIC auto get_return_object(QUASAR_CORO_EO_THIS Self& self){
+			return std::coroutine_handle<Self>::from_promise(self);
+		}
 	};
 
 
@@ -154,7 +156,8 @@ QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 	template<class> struct yield_iterator;
 
 	template<class Yield, bool async = false> struct yield {
-		template<class T = Yield> eo_static auto yield_value(eo_this auto& self, T&& value) noexcept {
+		template<class T = Yield>
+		QUASAR_CORO_EO_STATIC auto yield_value(QUASAR_CORO_EO_THIS auto& self, T&& value) noexcept {
 			self.m_yield.capture_value(std::forward<T>(value));
 			if constexpr(async){ return self.intermediate_suspend(); }
 			else { return std::suspend_always{}; }
@@ -171,7 +174,8 @@ QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 		using Base::Base;
 		using Base::yield_value;
 
-		template<class Coro> eo_static auto yield_value(eo_this auto& self, Coro&& task) noexcept requires (
+		template<class Coro>
+		QUASAR_CORO_EO_STATIC auto yield_value(QUASAR_CORO_EO_THIS auto& self, Coro&& task) noexcept requires (
 			!std::convertible_to<std::remove_cvref_t<Coro>, std::remove_cvref_t<Yield>>&&
 			requires { self.m_iterator->get_awaiter(self, std::move(task)); }
 		){
@@ -236,6 +240,6 @@ QUASAR_CORO_EXPORT namespace quasar::coro {
 	};
 }
 
-#undef eo_static
-#undef eo_this
+#undef QUASAR_CORO_EO_STATIC
+#undef QUASAR_CORO_EO_THIS
 #undef QUASAR_CORO_NO_EXPLICIT_OBJECT
