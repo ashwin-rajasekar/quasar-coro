@@ -1,0 +1,35 @@
+name: Sync CMake Version with Git Tag
+
+on:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        ref: main
+        token: ${{ secrets.ACTIONS_BOT }}
+
+    - name: Bump Version
+      run: cmake -DVERSION=${{ github.ref }}  -P cmake/version.cmake
+    
+    - name: Commit and Push Changes
+      shell: bash
+      run: |
+        # configure user
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+        # commit & push version bump
+        git commit -am '[Automated] version bump'
+        git push
+
+        # move tag
+        git update-ref ${{ github.ref }} HEAD
+        git push --force origin ${{ github.ref }} 
+
