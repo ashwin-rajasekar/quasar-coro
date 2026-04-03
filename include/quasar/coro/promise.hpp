@@ -86,7 +86,7 @@ QUASAR_CORO_EXPORT namespace quasar::coro::promise {
 
 	/** Exception Support **/
 	struct nothrow {
-		void unhandled_exception() const noexcept { std::terminate(); }
+		[[noreturn]] void unhandled_exception() const noexcept { std::terminate(); }
 	};
 
 	struct unwind_on_exception {
