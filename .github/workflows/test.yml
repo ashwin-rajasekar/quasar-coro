@@ -18,6 +18,7 @@ jobs:
         c_compiler: [ gcc-14, clang ]
         cpp_std: [ 20, 23 ]
         build_type: [ Release ]
+        modules: ["TRUE", "FALSE"]
         include:
           - c_compiler: gcc-14
             cpp_compiler: g++-14
@@ -47,7 +48,7 @@ jobs:
         -DCMAKE_CXX_STANDARD=${{ matrix.cpp_std }}
         -DCMAKE_CXX_STANDARD_REQUIRED=TRUE
         -DCMAKE_CXX_EXTENSIONS=FALSE
-        -DQUASAR_CORO_MODULES=TRUE
+        -DQUASAR_CORO_MODULES={{ matrix.modules }}
         -B ${{ steps.strings.outputs.build-output-dir }}
         -S ${{ github.workspace }}
         -G Ninja
