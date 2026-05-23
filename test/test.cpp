@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #ifndef QUASAR_CORO_MODULES
+	#include <quasar/coro/barrier.hpp>
 	#include <quasar/coro/coroutine.hpp>
 	#include <quasar/coro/yield.hpp>
 
