@@ -21,7 +21,7 @@ else()
 		BASE_DIRS include
 		FILES include/quasar/coro
 	)
-	target_compile_definitions(coro PUBLIC QUASAR_CORO_EXPORT)
+	target_compile_definitions(coro INTERFACE QUASAR_CORO_EXPORT=)
 endif()
 
 add_library(quasar::coro ALIAS coro)
