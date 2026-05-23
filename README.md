@@ -75,10 +75,12 @@ If the handle is `std::noop_coroutine()`, control is transferred back to the res
 If `Destructive` is true and control is actually transferred (i.e. the handle is not `nullptr`) then the calling coroutine frame is destroyed before the control transfer. This can be useful for coroutines not managed by the lifetime of an object.
 
 ### `await::callback<Ts...>`
-This awaitable is constructed with an arbitrary function object (the functor) that accepts a callable of signature `void(Ts...)` (the completion handler).
-The functor is immediately invoked upon construction of the `callback` object, and is passed the completion handler; code inside the functor is free to copy the completion handler, but must not form references to it.
+This awaitable is constructed with an arbitrary set of arguments `args` such that `std::invoke(args..., func)` is a valid expression.
+In this context, `func` is an r-value callable of signature `void(Ts...)` (the completion handler).
+The invoke-expression is immediately executed upon construction of the `callback` object; the resulting invacation is allowed to copy the completion handler, but must not form references to it (since it is an r-value).
 If the completion handler is invoked inside the functor, the awaiting coroutine is not suspended and completes the `co_await` synchronously.
 This awaitable type is meant to allow interfacing with callback-based APIs so that they can accept the current coroutine as a callback function.
+The result of `co_await`ing this awaitable is a `std::tuple<Ts...>` (or simply `Ts` if it is only a single type).
 Note that all types in `Ts...` must not be cv-`void` and must be move-constructible; reference types are permitted as well.
 
 ### `await::fetch<T>`

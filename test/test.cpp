@@ -56,6 +56,24 @@ namespace {
 		co_await b;
 		output.push_back(5);
 	}
+
+	template<class... Ts> struct function_dispatcher {
+		std::function<void(Ts...)> func{};
+
+		void await(std::function<void(Ts...)> callback){ func = std::move(callback); }
+	};
+
+	template<class...Ts> void dispatcher_await(function_dispatcher<Ts...>& disp, std::function<void(Ts...)> callback){
+		disp.func = std::move(callback);
+	}
+
+	procedure callback_test(std::vector<int>& output, function_dispatcher<int>& dispatcher){
+		output.push_back(1);
+		output.push_back(co_await await::callback<int>{&function_dispatcher<int>::await, dispatcher});
+		output.push_back(2);
+		output.push_back(co_await await::callback<int>{dispatcher_await<int>, dispatcher});
+		output.push_back(3);
+	}
 }
 
 TEST(AwaiterTest, SimpleDelegate){
@@ -87,5 +105,15 @@ TEST(AwaiterTest, DestructiveHandoff){
 TEST(AwaiterTest, Barrier){
 	std::vector<int> checkpoints, expected{3, 1, 2, 4, 5};
 	barrier_test(checkpoints);
+	EXPECT_EQ(checkpoints, expected);
+}
+
+TEST(AwaiterTest, Callback){
+	std::vector<int> checkpoints, expected{1, 11, 2, 12, 3};
+	function_dispatcher<int> dispatcher;
+
+	callback_test(checkpoints, dispatcher);
+	dispatcher.func(11);
+	dispatcher.func(12);
 	EXPECT_EQ(checkpoints, expected);
 }
