@@ -20,6 +20,7 @@
 #pragma once
 
 #include <coroutine>
+#include <functional>
 #include <optional>
 #include <tuple>
 #include <utility>
@@ -57,12 +58,20 @@ QUASAR_CORO_EXPORT namespace quasar::coro::await {
 	template<class... Ts> struct callback {
 		static_assert(((!std::is_void_v<Ts>) && ...), "void cannot be passed as a parameter");
 
-		constexpr callback(auto&& func){
-			func([this](Ts... args){
+		constexpr callback(auto&&... func_args){
+			std::invoke(std::forward<decltype(func_args)>(func_args)..., [this](Ts... args){
 				m_results.emplace(std::forward<Ts...>(args)...);
 				if(m_task){ m_task.resume(); }
 			});
 		}
+
+		/* the `function` takes a pointer to this `callback`; allowing it to move would risk letting that pointer dangle */
+		callback(callback const&)           = delete;
+		callback(callback&&)                = delete;
+		callback operator=(callback const&) = delete;
+		callback operator=(callback&&)      = delete;
+
+		~callback() = default;
 
 		constexpr bool await_ready() const noexcept { return !!m_results; }
 

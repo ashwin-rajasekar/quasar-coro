@@ -21,6 +21,7 @@ module;
 
 #include <coroutine>
 #include <exception>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <tuple>
