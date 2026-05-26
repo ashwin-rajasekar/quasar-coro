@@ -60,7 +60,7 @@ QUASAR_CORO_EXPORT namespace quasar::coro::await {
 
 		constexpr callback(auto&&... func_args){
 			std::invoke(std::forward<decltype(func_args)>(func_args)..., [this](Ts... args){
-				m_results.emplace(std::forward<Ts...>(args)...);
+				m_results.emplace(std::forward<Ts>(args)...);
 				if(m_task){ m_task.resume(); }
 			});
 		}
